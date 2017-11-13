@@ -1,0 +1,54 @@
+<html>
+  <body style="background:black;color:#00ff00;">
+    <div style="display:none">
+      <new-tag id=source-tag tag-name="foo-bar" attrs="aa, bb,cc ,dd , ee ">
+        <template id=source-template>foo <slot></slot> bar</template>
+      </new-tag>
+      <foo-bar id=tested>baz</foo-bar>
+    </div>
+    <pre id=test-output></pre>
+    <script src=./bundle.js></script>
+    <script>
+
+const sourceTag = document.getElementById('source-tag');
+const sourceTemplate = document.getElementById('source-template');
+const tested = document.getElementById('tested');
+
+test`new element is foo-bar`(() => {
+  assert.equal(tested.localName, sourceTag.getAttribute('tag-name'));
+});
+test`new element has shadow`(() =>  {
+  assert(tested.shadow);
+});
+test`new element shadow html is original source`(() =>  {
+  assert.equal(tested.shadow.innerHTML, sourceTemplate.innerHTML);
+});
+test`new element content is just "baz"`(() => {
+  assert.equal(tested.innerHTML, 'baz');
+});
+`aa bb cc dd ee`.split(' ').forEach(prop => {
+  test`setting observed ${prop} as property affects attribute`(() => {
+    tested[prop] = 'foo';
+    assert.equal(tested.getAttribute(prop), 'foo');
+  });
+  test`setting observed ${prop} as attribute affects property`(() => {
+    tested.setAttribute(prop, 'foo');
+    assert.equal(tested[prop], 'foo');
+  });
+});
+`ff gg hh ii jj`.split(' ').forEach(prop => {
+  test`setting unobserved ${prop} as property does not affect attribute`(() => {
+    tested[prop] = 'foo';
+    assert.notEqual(tested.getAttribute(prop), 'foo');
+  });
+  test`setting unobserved ${prop} as attribute does not affect property`(() => {
+    tested.setAttribute(prop, 'foo');
+    assert.equal(tested[prop], 'foo');
+  });
+});
+
+test();
+
+    </script>
+  </body>
+</html>
